@@ -57,5 +57,14 @@ public class PatientController {
         );
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<?>> deletePatient(
+            @PathVariable UUID id){
+        patientServices.deletePatient(id);
+        return ResponseEntity.ok(
+                ApiResponse.success("Patient Deleted Successfully", null, 0));
+    }
+
+
 
 }

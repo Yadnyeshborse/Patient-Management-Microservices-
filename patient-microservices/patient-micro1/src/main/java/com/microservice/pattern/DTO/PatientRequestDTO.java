@@ -1,6 +1,7 @@
 package com.microservice.pattern.DTO;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.microservice.pattern.DTO.Validators.CreatePatientValidationGroup;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,8 +10,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 
-@Getter
-@Setter
+
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
@@ -31,10 +31,48 @@ public class PatientRequestDTO {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate dateOfBirth;
 
-    @NotNull(message = "Registration date cannot be null")
+    @NotNull(groups = CreatePatientValidationGroup.class, message =
+            "Registered date is required")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private LocalDate registrationDate;
 
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
+    }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public LocalDate getRegistrationDate() {
+        return registrationDate;
+    }
+
+    public void setRegistrationDate(LocalDate registrationDate) {
+        this.registrationDate = registrationDate;
+    }
 }

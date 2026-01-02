@@ -2,10 +2,13 @@ package com.microservice.pattern.Controller;
 
 import com.microservice.pattern.DTO.PatientRequestDTO;
 import com.microservice.pattern.DTO.PatientResponseDTO;
+import com.microservice.pattern.DTO.Validators.CreatePatientValidationGroup;
 import com.microservice.pattern.Services.PatientServices;
 import com.microservice.pattern.common.ApiResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.groups.Default;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,7 +40,7 @@ public class PatientController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<?>> createPatient(
-            @Valid @RequestBody PatientRequestDTO patientRequestDTO) {
+            @Validated({Default.class, CreatePatientValidationGroup.class}) @RequestBody PatientRequestDTO patientRequestDTO) {
 
         PatientResponseDTO createdPatient = patientServices.createPatient(patientRequestDTO);
 
@@ -47,7 +50,7 @@ public class PatientController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> updatePatient(
-            @PathVariable UUID id,@Valid @RequestBody PatientRequestDTO patientRequestDTO) {
+            @PathVariable UUID id, @Validated({Default.class}) @RequestBody PatientRequestDTO patientRequestDTO) {
         PatientResponseDTO updatedPatient = patientServices.updatePatient(id, patientRequestDTO);
         return ResponseEntity.ok(
                 ApiResponse.success("Patient updated successfully", updatedPatient, 1)

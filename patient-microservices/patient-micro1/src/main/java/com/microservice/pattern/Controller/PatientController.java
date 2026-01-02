@@ -47,7 +47,7 @@ public class PatientController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<?>> updatePatient(
-            @PathVariable UUID id, @RequestBody PatientRequestDTO patientRequestDTO) {
+            @PathVariable UUID id,@Valid @RequestBody PatientRequestDTO patientRequestDTO) {
         PatientResponseDTO updatedPatient = patientServices.updatePatient(id, patientRequestDTO);
         return ResponseEntity.ok(
                 ApiResponse.success("Patient updated successfully", updatedPatient, 1)

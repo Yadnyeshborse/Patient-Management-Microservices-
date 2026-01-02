@@ -15,5 +15,6 @@ public class PatientResponseDTO {
     private String email;
     private String address;
     private String dateOfBirth;
+    private String registrationDate;
 
 }

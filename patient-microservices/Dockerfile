@@ -41,7 +41,7 @@ WORKDIR /app
 # Copy the correct jar from builder stage
 COPY --from=builder /app/patient-micro1/target/patient-micro1-1.0-SNAPSHOT.jar ./app.jar
 
-EXPOSE 4000
+EXPOSE 8081
 ENTRYPOINT ["java", "-jar", "app.jar"]
 
 

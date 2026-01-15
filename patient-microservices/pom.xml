@@ -20,7 +20,7 @@
   </parent>
 
   <modules>
-    <module>patient-micro1</module>
+      <module>patient-micro1</module>
       <module>billing_services_1</module>
   </modules>
 

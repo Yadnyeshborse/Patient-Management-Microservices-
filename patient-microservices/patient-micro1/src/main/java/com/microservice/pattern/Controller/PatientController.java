@@ -7,6 +7,7 @@ import com.microservice.pattern.Services.PatientServices;
 import com.microservice.pattern.common.ApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.groups.Default;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,7 @@ public class PatientController {
 
     private final PatientServices patientServices;
 
+    @Autowired
     public PatientController(PatientServices patientServices) {
         this.patientServices = patientServices;
     }

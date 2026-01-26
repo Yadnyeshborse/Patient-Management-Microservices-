@@ -1,7 +1,6 @@
-version: '3.9'
+version: "3.9"
 
 services:
-
   mysql:
     image: mysql:8.0
     container_name: mysql
@@ -10,28 +9,56 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: yadn
-      MYSQL_USER: admin_username
-      MYSQL_PASSWORD: root
-    networks:
-      - internal
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  patient-service:
+  billing_services_1:
     build:
-      context: .   # <-- this is the folder containing the Dockerfile
-      dockerfile: Dockerfile
+      context: ./billing_services_1
+    container_name: billing-services-1
+    ports:
+      - "4001:4001"
+      - "19001:9001"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/yadn
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_SQL_INIT_MODE: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - internal
+
+  patient-micro1:
+    build:
+      context: .
+      dockerfile: patient-micro1/Dockerfile
     container_name: patient-micro1
     ports:
       - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/yadn
-      SPRING_DATASOURCE_USERNAME: admin_username
+      SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_SQL_INIT_MODE: always
+      SERVER_PORT: 8081
+      BILLING_SERVICE_ADDRESS: billing-services-1
+      BILLING_SERVICE_GRPC_PORT: 9001
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+      billing_services_1:
+        condition: service_started
     networks:
       - internal
 

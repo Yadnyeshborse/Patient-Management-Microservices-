@@ -5,9 +5,12 @@ import com.microservice.pattern.DTO.PatientRequestDTO;
 import com.microservice.pattern.DTO.PatientResponseDTO;
 import com.microservice.pattern.exception.EmailAlreadyExistException;
 import com.microservice.pattern.exception.PatientNotFoundException;
+import com.microservice.pattern.grpc.BillingServiceGrpcClient;
 import com.microservice.pattern.mapper.PatientMapper;
 import com.microservice.pattern.model.Patient;
 import com.microservice.pattern.repositery.PatientRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,8 +21,18 @@ import java.util.stream.Collectors;
 @Service
 public class PatientServices {
 
-    @Autowired
+    private static final Logger log = LoggerFactory.getLogger(PatientServices.class);
+
     private PatientRepository patientRepository;
+
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
+
+    @Autowired
+    public PatientServices(BillingServiceGrpcClient billingServiceGrpcClient, PatientRepository patientRepository) {
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
+        this.patientRepository = patientRepository;
+    }
+
 
     public List<PatientResponseDTO> findPatiendts() {
         List<Patient> patients = patientRepository.findAll();
@@ -35,6 +48,20 @@ public class PatientServices {
             throw new EmailAlreadyExistException("Patient with email " + patientRequestDTO.getEmail() + " already exsists");
         }
         Patient patient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
+        log.info("Creating billing account for patient id: {},{},{},{}", patient.getId(), patient.getName(), patient.getEmail(),patient);
+
+        try {
+            billingServiceGrpcClient.createBillingAccount(
+                    patient.getId().toString(),
+                    patient.getName(),
+                    patient.getEmail()
+            );
+        } catch (Exception e) {
+            log.error("Failed to call Billing Service", e);
+        }
+        log.info("About to call Billing GRPC service...");
+
+
         return PatientMapper.toDTO(patient);
     }
 

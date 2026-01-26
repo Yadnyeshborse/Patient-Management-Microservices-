@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package patient;
+
+import "bolling_service.proto";  // import billing proto
+
+service PatientService {
+  rpc CreatePatient(PatientRequest) returns (PatientResponse);
+  rpc CreateBillingAccount(BillingRequest) returns (BillingResponse); // reuse billing messages
+}
+
+message PatientRequest {
+  string patientId = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message PatientResponse {
+  string status = 1;
+  string message = 2;
+}

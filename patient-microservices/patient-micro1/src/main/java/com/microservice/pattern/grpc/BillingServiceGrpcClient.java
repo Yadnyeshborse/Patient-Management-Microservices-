@@ -46,13 +46,22 @@ public class BillingServiceGrpcClient {
     }
 
     public BillingResponse createBillingAccount(String patientId, String name, String email) {
-        initStub(); // initialize lazily
+        initStub();
+
         BillingRequest request = BillingRequest.newBuilder()
                 .setPatientId(patientId)
                 .setName(name)
                 .setEmail(email)
                 .build();
 
-        return blockingStub.createBillingAccount(request);
+        log.info("About to send billing request to gRPC server: patientId={}, name={}, email={}", patientId, name, email);
+
+        BillingResponse response = blockingStub.createBillingAccount(request);
+
+        log.info("Received BillingResponse in client: accountId={}, status={}",
+                response.getAccountId(), response.getStatus());
+
+        return response;
     }
+
 }

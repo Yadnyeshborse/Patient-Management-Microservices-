@@ -6,6 +6,7 @@ import com.microservice.pattern.DTO.PatientResponseDTO;
 import com.microservice.pattern.exception.EmailAlreadyExistException;
 import com.microservice.pattern.exception.PatientNotFoundException;
 import com.microservice.pattern.grpc.BillingServiceGrpcClient;
+import com.microservice.pattern.kafka.KafkaProducer;
 import com.microservice.pattern.mapper.PatientMapper;
 import com.microservice.pattern.model.Patient;
 import com.microservice.pattern.repositery.PatientRepository;
@@ -27,10 +28,13 @@ public class PatientServices {
 
     private final BillingServiceGrpcClient billingServiceGrpcClient;
 
+    private final KafkaProducer kafkaProducer;
+
     @Autowired
-    public PatientServices(BillingServiceGrpcClient billingServiceGrpcClient, PatientRepository patientRepository) {
+    public PatientServices(BillingServiceGrpcClient billingServiceGrpcClient, PatientRepository patientRepository,KafkaProducer kafkaProducer) {
         this.billingServiceGrpcClient = billingServiceGrpcClient;
         this.patientRepository = patientRepository;
+        this.kafkaProducer=kafkaProducer;
     }
 
 
@@ -48,7 +52,7 @@ public class PatientServices {
             throw new EmailAlreadyExistException("Patient with email " + patientRequestDTO.getEmail() + " already exsists");
         }
         Patient patient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
-        log.info("Creating billing account for patient id: {},{},{},{}", patient.getId(), patient.getName(), patient.getEmail(),patient);
+        log.info("Creating billing account for patient id: {},{},{},{}", patient.getId(), patient.getName(), patient.getEmail(), patient);
 
         try {
             billingServiceGrpcClient.createBillingAccount(
@@ -61,6 +65,9 @@ public class PatientServices {
         }
         log.info("About to call Billing GRPC service...");
 
+        kafkaProducer.sendEvent(patient);
+        log.info("event sent to kafka topic patient");
+
 
         return PatientMapper.toDTO(patient);
     }
@@ -70,8 +77,8 @@ public class PatientServices {
         Patient existingPatient = patientRepository.findById(id)
                 .orElseThrow(() -> new PatientNotFoundException("Patient not found with id: " + id));
 
-        if (patientRepository.existsByEmailAndId(patientRequestDTO.getEmail(),id)){
-            throw new EmailAlreadyExistException("Patient with email "+patientRequestDTO.getEmail()+"already exist");
+        if (patientRepository.existsByEmailAndId(patientRequestDTO.getEmail(), id)) {
+            throw new EmailAlreadyExistException("Patient with email " + patientRequestDTO.getEmail() + "already exist");
         }
 
         existingPatient.setName(patientRequestDTO.getName());
